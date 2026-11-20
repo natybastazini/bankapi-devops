@@ -41,6 +41,7 @@ public class SecurityConfig {
         );
     }
 
+    // corrigido
     @Bean
     AuthenticationManager authenticationManager(UserDetailsService users, PasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
