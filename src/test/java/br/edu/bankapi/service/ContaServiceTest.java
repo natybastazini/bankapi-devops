@@ -28,4 +28,36 @@ class ContaServiceTest {
   assertThrows(IllegalArgumentException.class, () -> service.sacar(1L,new BigDecimal("200.00")));
   verify(repository,never()).save(any());
  }
+
+ @Test void deveDepositarValorPositivo() {
+  ContaCorrente conta=new ContaCorrente(); conta.setSaldo(new BigDecimal("100.00"));
+  when(repository.findById(1L)).thenReturn(Optional.of(conta));
+  when(repository.save(any(ContaCorrente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+  ContaCorrente resultado=service.depositar(1L,new BigDecimal("50.00"));
+  assertEquals(0,new BigDecimal("150.00").compareTo(resultado.getSaldo()));
+  verify(repository).save(conta);
+ }
+ @Test void naoDeveDepositarValorZero() {
+  assertThrows(IllegalArgumentException.class, () -> service.depositar(1L,BigDecimal.ZERO));
+  verify(repository,never()).save(any());
+ }
+ @Test void naoDeveDepositarValorNegativo() {
+  assertThrows(IllegalArgumentException.class, () -> service.depositar(1L,new BigDecimal("-10.00")));
+  verify(repository,never()).save(any());
+ }
+ @Test void deveSacarValorExatoDoSaldo() {
+  ContaCorrente conta=new ContaCorrente(); conta.setSaldo(new BigDecimal("100.00"));
+  when(repository.findById(1L)).thenReturn(Optional.of(conta));
+  when(repository.save(any(ContaCorrente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+  ContaCorrente resultado=service.sacar(1L,new BigDecimal("100.00"));
+  assertEquals(0,BigDecimal.ZERO.compareTo(resultado.getSaldo()));
+  verify(repository).save(conta);
+ }
+ @Test void naoDeveOperarContaInexistente() {
+  when(repository.findById(99L)).thenReturn(Optional.empty());
+  assertThrows(IllegalArgumentException.class, () -> service.depositar(99L,new BigDecimal("10.00")));
+  assertThrows(IllegalArgumentException.class, () -> service.sacar(99L,new BigDecimal("10.00")));
+  verify(repository,never()).save(any());
+ }
+
 }
